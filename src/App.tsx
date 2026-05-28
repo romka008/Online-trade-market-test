@@ -30,6 +30,7 @@ function HomePage() {
                     width="100%"
                     height="100%"
                     style={{border: "none"}}
+                    // allow="cookies"
                     allowFullScreen
                 />
             </div>

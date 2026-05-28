@@ -1,7 +1,72 @@
+import {useEffect} from "react";
 import {Link} from "react-router-dom";
+
+/**
+ * ПроблемА: iframe грузит сторонний сайт (https://api-test.aslife.ru),
+ * и браузер блокирует установку cookies от этого iframe (third-party context).
+ *
+ * Cookies от api-test.aslife.ru НЕ ДОЛЖНЫ уходить на ваш домен (192.168.0.102).
+ * Они должны оставаться на домене api-test.aslife.ru.
+ *
+ * Что МОЖНО сделать со стороны клиента (вашего приложения):
+ * 1. Отправить скрытую форму на целевой домен (api-test.aslife.ru) —
+ *    это "пробивает" cookie-блокировку в Safari/Opera (Способ 3 из статьи).
+ *
+ * Что ДОЛЖЕН делать сервер api-test.aslife.ru:
+ * - Отправлять P3P-заголовок: P3P: CP="IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT"
+ * - Устанавливать cookies с атрибутами: SameSite=None; Secure; Path=/
+ * - (Без этого cookies в iframe работать не будут)
+ */
 
 function EmbedPage() {
     const href = window.location.search.replace(/^\?url=/, "");
+
+    /**
+     * Хак для third-party cookies в iframe (Способ 3 из статьи):
+     * Создаём скрытую форму, которая отправляется на целевой домен (api-test.aslife.ru).
+     * Это заставляет браузер "разрешить" cookies для этого домена в iframe-контексте.
+     *
+     * Форма отправляется в скрытый iframe, чтобы не было редиректа.
+     * После этого основной iframe может устанавливать cookies на свой домен.
+     */
+    // useEffect(() => {
+    //     if (!href) return;
+
+    //     try {
+    //         const targetUrl = new URL(href);
+    //         const targetOrigin = targetUrl.origin;
+
+    //         // Создаём скрытый iframe для приёма формы
+    //         const hackIframe = document.createElement("iframe");
+    //         hackIframe.name = "cookiesHackFrame";
+    //         hackIframe.id = "cookiesHackFrame";
+    //         hackIframe.style.display = "none";
+    //         // Пытаемся загрузить пустую страницу на целевом домене
+    //         hackIframe.src = `${targetOrigin}/blank.html`;
+    //         document.body.appendChild(hackIframe);
+
+    //         // Создаём форму, которая отправляется на целевой домен
+    //         const form = document.createElement("form");
+    //         form.id = "cookiesHackForm";
+    //         form.method = "GET";
+    //         form.action = href;
+    //         form.target = "cookiesHackFrame";
+    //         form.style.display = "none";
+    //         document.body.appendChild(form);
+
+    //         // Отправляем форму — это "пробивает" cookie-блокировку
+    //         form.submit();
+
+    //         return () => {
+    //             const existingForm = document.getElementById("cookiesHackForm");
+    //             const existingFrame = document.getElementById("cookiesHackFrame");
+    //             if (existingForm) document.body.removeChild(existingForm);
+    //             if (existingFrame) document.body.removeChild(existingFrame);
+    //         };
+    //     } catch {
+    //         // Если URL некорректный — просто грузим iframe без хака
+    //     }
+    // }, [href]);
 
     return (
         <div className="embed-page">
@@ -70,6 +135,18 @@ function EmbedPage() {
                     )}
                 </div>
             </div>
+
+            {/* Основной iframe с целевым контентом */}
+            {/* {href && (
+                <iframe
+                    src={href}
+                    title="Встроенный контент"
+                    width="100%"
+                    height="100%"
+                    style={{border: "none", position: "fixed", inset: 0, zIndex: 9999}}
+                    allowFullScreen
+                />
+            )} */}
         </div>
     );
 }
