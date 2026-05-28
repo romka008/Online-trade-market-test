@@ -1,15 +1,14 @@
 import {Link} from "react-router-dom";
 
 function EmbedPage() {
-    const params = new URLSearchParams(window.location.search);
-    const target = params.get("url");
+    const href = window.location.search.replace(/^\?url=/, "");
 
     return (
         <div className="embed-page">
             <div className="embed-card">
                 <div className="embed-icon">🚀</div>
                 <h1 className="embed-title">Embed Page</h1>
-                <p className="embed-description">{target ? `URL: ${target}` : "Параметр 'url' не указан"}</p>
+                <p className="embed-description">{href ? `URL: ${href}` : "Параметр 'url' не указан"}</p>
 
                 <div className="embed-actions">
                     <Link className="embed-btn embed-btn-back" to="/">
@@ -28,8 +27,8 @@ function EmbedPage() {
                         На главную
                     </Link>
 
-                    {target && (
-                        <Link className="embed-btn embed-btn-open" to={target}>
+                    {href && (
+                        <Link className="embed-btn embed-btn-open" to={href}>
                             <svg
                                 width="20"
                                 height="20"
@@ -47,10 +46,10 @@ function EmbedPage() {
                         </Link>
                     )}
 
-                    {target && (
+                    {href && (
                         <Link
                             className="embed-btn embed-btn-new-tab"
-                            to={target}
+                            to={href}
                             target="_blank"
                             rel="noopener noreferrer">
                             <svg
